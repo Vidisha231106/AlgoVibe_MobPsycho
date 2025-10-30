@@ -6,7 +6,10 @@
   width: 100vw;
   height: 100vh;
   pointer-events: none;
-  z-index: 0;
+  /* place the lightning above page background images but below main content (which uses z-10)
+     use a modest positive z-index so it reliably appears in front of any absolutely positioned
+     background elements defined inside page components */
+  z-index: 5;
   display: block;
 }
 

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Play, RotateCcw, BookOpen, TrendingUp, Zap } from 'lucide-react';
 import bgImage from '../components/image.png';
+import explodeImg from '../components/explode.jpg';
 
 export default function Simulation() {
   const [n, setN] = useState(10);
@@ -48,7 +49,9 @@ export default function Simulation() {
       setExplosionList([...explosionList, step]);
       finalEnergy = 0;
       setIsExplosion(true);
-      setTimeout(() => setIsExplosion(false), 1000);
+      // Keep the explosion swirl visible longer so the effect is more pronounced
+      // Timeout should match the motion image exit duration below.
+      setTimeout(() => setIsExplosion(false), 2200);
     }
 
     setHistory([...history, {
@@ -105,7 +108,7 @@ export default function Simulation() {
     <div className="min-h-screen bg-gradient-to-b from-[#0a0a23] to-[#050512] p-6 relative overflow-hidden">
       {/* Page background image (subtle) */}
       <div
-        className="absolute inset-0 bg-cover bg-center pointer-events-none"
+        className="absolute inset-0 bg-cover bg-center pointer-events-none z-0"
         style={{ backgroundImage: `url(${bgImage})`, opacity: 0.25 }}
         aria-hidden
       />
@@ -325,7 +328,7 @@ export default function Simulation() {
         )}
 
         {/* Prefix Sum Visualization */}
-        {prefixSum.length > 1 && (
+        {history.length > 0 && (
           <div className="bg-black/40 backdrop-blur-sm rounded-lg p-6 border border-[#00ff88]/20 mb-6">
             <h3 className="text-xl font-bold text-white mb-4 flex items-center">
               <TrendingUp className="w-5 h-5 mr-2 text-[#00ff88]" />
@@ -346,30 +349,72 @@ export default function Simulation() {
                   opacity="0.5"
                 />
 
-                {/* Prefix sum line */}
-                {prefixSum.map((val, idx) => {
-                  if (idx === 0) return null;
-                  const x1 = ((idx - 1) / (n)) * 100;
-                  const x2 = (idx / (n)) * 100;
-                  const y1 = 100 - (prefixSum[idx - 1] / (threshold * 1.2)) * 100;
-                  const y2 = 100 - (val / (threshold * 1.2)) * 100;
+                {/* Plot using history so we can show pre-reset peaks and post-reset baseline drops */}
+                {history.map((entry, i) => {
+                  // i corresponds to event index 0..history.length-1
+                  const idx = i + 1; // 1-based event number
+                  const prevDisplay = i === 0 ? 0 : history[i - 1].energyAfter; // displayed energy after previous event
+                  const preValue = entry.prefixAfter; // running total before any reset
+                  const postDisplay = entry.energyAfter; // displayed energy after applying reset (0 if exploded)
+
+                  const x1 = ((idx - 1) / n) * 100;
+                  const x2 = (idx / n) * 100;
+
+                  const scale = threshold * 1.2;
+                  const mapY = (v: number) => 100 - (v / scale) * 100;
+                  const clampY = (y: number) => Math.max(Math.min(y, 140), -40);
+
+                  const yPrev = clampY(mapY(prevDisplay));
+                  const yPre = clampY(mapY(preValue));
+                  const yPost = clampY(mapY(postDisplay));
+
+                  const exploded = entry.exploded;
 
                   return (
                     <g key={idx}>
+                      {/* Line showing accumulation up to the pre-reset value */}
                       <line
                         x1={`${x1}%`}
-                        y1={`${y1}%`}
+                        y1={`${yPrev}%`}
                         x2={`${x2}%`}
-                        y2={`${y2}%`}
+                        y2={`${yPre}%`}
                         stroke="#00ff88"
                         strokeWidth="3"
                       />
+
+                      {/* If exploded, draw a vertical drop from the pre-peak down to baseline (post reset) */}
+                      {exploded && (
+                        <line
+                          x1={`${x2}%`}
+                          y1={`${yPre}%`}
+                          x2={`${x2}%`}
+                          y2={`${yPost}%`}
+                          stroke="#ff0055"
+                          strokeWidth="2"
+                          strokeDasharray="2,2"
+                          opacity={0.9}
+                        />
+                      )}
+
+                      {/* Circle at the pre-value (peak) */}
                       <circle
                         cx={`${x2}%`}
-                        cy={`${y2}%`}
+                        cy={`${yPre}%`}
                         r="4"
-                        fill={explosionList.includes(idx) ? '#ff0055' : '#00ff88'}
+                        fill={exploded ? '#ff0055' : '#00ff88'}
                       />
+
+                      {/* If exploded, also mark the post-reset baseline point */}
+                      {exploded && (
+                        <circle
+                          cx={`${x2}%`}
+                          cy={`${yPost}%`}
+                          r="4"
+                          fill="#ffffff"
+                          stroke="#ff0055"
+                          strokeWidth={2}
+                        />
+                      )}
                     </g>
                   );
                 })}
@@ -381,6 +426,8 @@ export default function Simulation() {
                 <span className="text-red-400">● Explosion</span>
                 {' | '}
                 <span className="text-red-400">--- Threshold ({threshold})</span>
+                {' | '}
+                <span className="text-gray-400">Baseline = 0</span>
               </div>
             </div>
           </div>
@@ -452,43 +499,46 @@ export default function Simulation() {
         </div>
       </div>
 
-      {/* Explosion Particles */}
+      {/* Explosion Swirl Animation */}
       <AnimatePresence>
         {isExplosion && (
-          <div className="fixed inset-0 pointer-events-none z-50">
-            {[...Array(20)].map((_, i) => (
-              <motion.div
-                key={i}
-                className="absolute w-3 h-3 bg-[#ff0055] rounded-full"
-                initial={{
-                  x: '50vw',
-                  y: '30vh',
-                  opacity: 1
-                }}
-                animate={{
-                  x: `${50 + (Math.random() - 0.5) * 100}vw`,
-                  y: `${30 + (Math.random() - 0.5) * 100}vh`,
-                  opacity: 0,
-                  scale: 0
-                }}
-                transition={{ duration: 1, ease: 'easeOut' }}
-              />
-            ))}
+          <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-50">
+            <motion.img
+              src={explodeImg}
+              alt="Explosion"
+              // start small, expand larger, and rotate
+              initial={{ scale: 0.2, rotate: 0, opacity: 0.85 }}
+              animate={{ scale: 1.6, rotate: 360, opacity: 1 }}
+              exit={{ scale: 0.2, rotate: 0, opacity: 0 }}
+              // longer duration to match the setTimeout above so the image lingers
+              transition={{ duration: 2.2, ease: 'easeOut' }}
+              // Make the image visually larger on all screen sizes
+              className="w-96 h-96 md:w-[32rem] md:h-[32rem] object-contain drop-shadow-2xl"
+              style={{ zIndex: 51 }}
+            />
+            <motion.div
+              // Slightly larger heading and a transition that fits the longer swirl
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0, opacity: 0 }}
+              transition={{ duration: 0.6, delay: 0.25, type: 'spring', stiffness: 300 }}
+              className="absolute text-6xl md:text-8xl font-extrabold text-[#ff0055] drop-shadow-lg"
+              style={{ top: '50%', left: '50%', transform: 'translate(-50%, -120%)', zIndex: 52 }}
+            >
+              Explosion!
+            </motion.div>
+            <motion.div
+              // Make the reset text bolder and larger so it matches the larger explosion
+              initial={{ opacity: 0, scale: 0.85 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.85 }}
+              transition={{ duration: 0.7, delay: 0.9 }}
+              className="absolute text-3xl md:text-4xl font-bold text-white bg-black/60 px-6 py-3 rounded-lg shadow-lg"
+              style={{ top: '60%', left: '50%', transform: 'translate(-50%, 0)', zIndex: 53 }}
+            >
+              Energy Reset to 0
+            </motion.div>
           </div>
-        )}
-      </AnimatePresence>
-
-      {/* Explosion flash overlay */}
-      <AnimatePresence>
-        {isExplosion && (
-          <motion.div
-            key="explosion-flash"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: [0.9, 0.45, 0] }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.9, ease: 'easeOut' }}
-            className="fixed inset-0 pointer-events-none z-40 bg-white/90 mix-blend-screen"
-          />
         )}
       </AnimatePresence>
     </div>

@@ -9,7 +9,7 @@ export default function Home() {
     <div className="min-h-screen bg-gradient-to-b from-[#0a0a23] to-[#050512] flex flex-col items-center justify-center p-6 animate-fadeIn relative overflow-hidden">
       {/* Background image (less transparent) */}
       <div
-        className="absolute inset-0 bg-cover bg-center pointer-events-none"
+        className="absolute inset-0 bg-cover bg-center pointer-events-none z-0"
         style={{ backgroundImage: `url(${bgImage})`, opacity: 0.4 }}
         aria-hidden
       />
@@ -24,7 +24,7 @@ export default function Home() {
         </h1>
 
         <h2 className="text-2xl md:text-3xl font-light text-[#00ff88] mb-8 animate-slideDown">
-          Psychic Energy Simulator
+          Psychic Energy Simulator Using Prefix Sum
         </h2>
 
         <div className="bg-black/40 backdrop-blur-sm rounded-lg p-8 border border-[#00ff88]/20 shadow-lg shadow-[#00ff88]/10 animate-slideUp">
