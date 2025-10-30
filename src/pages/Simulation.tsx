@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Play, RotateCcw, BookOpen, TrendingUp, Zap } from 'lucide-react';
+import bgImage from '../components/image.png';
 
 export default function Simulation() {
   const [n, setN] = useState(10);
@@ -50,7 +51,6 @@ export default function Simulation() {
       setTimeout(() => setIsExplosion(false), 1000);
     }
 
-    // Add to history
     setHistory([...history, {
       step,
       change,
@@ -103,8 +103,15 @@ export default function Simulation() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#0a0a23] to-[#050512] p-6 relative overflow-hidden">
-      {/* Animated Background */}
-      <div className="fixed inset-0 pointer-events-none">
+      {/* Page background image (subtle) */}
+      <div
+        className="absolute inset-0 bg-cover bg-center pointer-events-none"
+        style={{ backgroundImage: `url(${bgImage})`, opacity: 0.25 }}
+        aria-hidden
+      />
+
+      {/* Animated Background - keeping this separate from lightning */}
+      <div className="fixed inset-0 pointer-events-none z-0">
         <motion.div
           className="absolute inset-0 opacity-30"
           animate={{
@@ -471,7 +478,7 @@ export default function Simulation() {
         )}
       </AnimatePresence>
 
-      {/* Explosion flash overlay (brief screen flash) */}
+      {/* Explosion flash overlay */}
       <AnimatePresence>
         {isExplosion && (
           <motion.div
@@ -484,8 +491,6 @@ export default function Simulation() {
           />
         )}
       </AnimatePresence>
-
-      {/* Global Lightning background is rendered in App.tsx; per-page instance removed to avoid duplicate canvases */}
     </div>
   );
 }
