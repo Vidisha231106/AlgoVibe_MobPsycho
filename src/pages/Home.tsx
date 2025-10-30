@@ -1,12 +1,20 @@
 import { useNavigate } from 'react-router-dom';
 import { Zap } from 'lucide-react';
+import bgImage from '../components/image.png';
 
 export default function Home() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#0a0a23] to-[#050512] flex flex-col items-center justify-center p-6 animate-fadeIn">
-      <div className="max-w-4xl w-full text-center space-y-8">
+    <div className="min-h-screen bg-gradient-to-b from-[#0a0a23] to-[#050512] flex flex-col items-center justify-center p-6 animate-fadeIn relative overflow-hidden">
+      {/* Background image (less transparent) */}
+      <div
+        className="absolute inset-0 bg-cover bg-center pointer-events-none"
+        style={{ backgroundImage: `url(${bgImage})`, opacity: 0.4 }}
+        aria-hidden
+      />
+
+      <div className="max-w-4xl w-full text-center space-y-8 relative z-10">
         <div className="relative mb-8">
           <Zap className="w-24 h-24 mx-auto text-[#00ff88] animate-pulse" />
         </div>

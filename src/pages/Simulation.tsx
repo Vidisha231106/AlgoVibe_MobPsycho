@@ -7,12 +7,20 @@ export default function Simulation() {
   const [threshold, setThreshold] = useState(100);
   const [currentEnergy, setCurrentEnergy] = useState(0);
   const [step, setStep] = useState(1);
-  const [explosionList, setExplosionList] = useState([]);
-  const [prefixSum, setPrefixSum] = useState([0]);
+  const [explosionList, setExplosionList] = useState<number[]>([]);
+  const [prefixSum, setPrefixSum] = useState<number[]>([0]);
   const [energyChange, setEnergyChange] = useState('');
-  const [history, setHistory] = useState([]);
+  const [history, setHistory] = useState<Array<{
+    step: number;
+    change: number;
+    energyBefore: number;
+    energyAfter: number;
+    exploded: boolean;
+    prefixBefore: number;
+    prefixAfter: number;
+  }>>([]);
   const [queryK, setQueryK] = useState('');
-  const [queryResult, setQueryResult] = useState(null);
+  const [queryResult, setQueryResult] = useState<string | null>(null);
   const [isExplosion, setIsExplosion] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
 
@@ -462,6 +470,22 @@ export default function Simulation() {
           </div>
         )}
       </AnimatePresence>
+
+      {/* Explosion flash overlay (brief screen flash) */}
+      <AnimatePresence>
+        {isExplosion && (
+          <motion.div
+            key="explosion-flash"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: [0.9, 0.45, 0] }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.9, ease: 'easeOut' }}
+            className="fixed inset-0 pointer-events-none z-40 bg-white/90 mix-blend-screen"
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Global Lightning background is rendered in App.tsx; per-page instance removed to avoid duplicate canvases */}
     </div>
   );
 }
