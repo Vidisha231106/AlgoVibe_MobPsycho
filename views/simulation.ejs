@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulation - Mob Psycho 100 Simulator</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="simulation-page">
+  <div class="container">
+    <h1>Psychic Energy Simulation</h1>
+
+    <div class="card">
+      <h2>Configuration</h2>
+      <form id="simulation-form">
+        <div class="form-group">
+          <label for="num-events">Number of Events (N):</label>
+          <input type="number" id="num-events" name="numEvents" min="1" max="100000" value="10" required>
+          <span class="hint">Range: 1-100,000</span>
+        </div>
+
+        <div class="form-group">
+          <label for="energy-changes">Energy Changes:</label>
+          <input type="text" id="energy-changes" name="energyChanges"
+                 placeholder="e.g., 50,30,-20,60,40" required>
+          <span class="hint">Comma-separated integers (positive or negative)</span>
+        </div>
+
+        <div class="form-group">
+          <label for="k-value">K (Query Value):</label>
+          <input type="number" id="k-value" name="kValue" min="1" max="1000" value="1" required>
+          <span class="hint">Find the Kth explosion event (Range: 1-1,000)</span>
+        </div>
+
+        <div class="form-group">
+          <label for="threshold">Explosion Threshold:</label>
+          <input type="number" id="threshold" name="threshold" min="1" value="100" required>
+          <span class="hint">Energy level that triggers an explosion</span>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Run Simulation</button>
+      </form>
+    </div>
+
+    <div id="results" class="card" style="display: none;">
+      <h2>Simulation Results</h2>
+
+      <div class="energy-display">
+        <div class="energy-meter">
+          <div class="energy-level" id="energy-level">0%</div>
+          <div class="energy-bar-sim">
+            <div class="energy-fill-sim" id="energy-fill">0%</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stats">
+        <div class="stat-item">
+          <span class="stat-label">Total Explosions:</span>
+          <span class="stat-value" id="total-explosions">0</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Final Energy:</span>
+          <span class="stat-value" id="final-energy">0%</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Answer for K:</span>
+          <span class="stat-value" id="k-answer">-</span>
+        </div>
+      </div>
+
+      <div class="explosions-list">
+        <h3>Explosion Events</h3>
+        <div id="explosions-container"></div>
+      </div>
+
+      <div class="event-timeline">
+        <h3>Event Timeline</h3>
+        <div id="timeline-container"></div>
+      </div>
+    </div>
+
+    <div class="button-group">
+      <a href="/intro" class="btn btn-secondary">Back</a>
+    </div>
+  </div>
+
+  <script src="/js/simulator.js"></script>
+</body>
+</html>
